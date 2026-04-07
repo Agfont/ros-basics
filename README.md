@@ -91,25 +91,41 @@ ros2 service list
 ros2 action list
 ```
 
-## 4. Example 3: Build packages using colcon
+## 4. Example 3: Build workspace using colcon
 
-Inside the container:
+Get example package source code:
 
 ```bash
-docker run -it --rm --name ros2-minimal --env DISPLAY=host.docker.internal:0 -v "$PWD/ros2_ws:/ros2_ws" ros2-minimal
-cd ros2_ws/
+mkdir -p ros2_ws/src
+cd ros2_ws/src/
+git clone https://github.com/ros/ros_tutorials.git --depth 1 -b jazzy
+rm -rf ros_tutorials/.git
+cd ../..
+```
+
+Start the container:
+
+```bash
+docker run -it --rm --name ros2-minimal --env DISPLAY=host.docker.internal:0 -v "./ros2_ws:/ros2_ws" ros2-minimal
 rosdep update
-rosdep install -i --from-path src --rosdistro jazzy -y
+rosdep install -i --from-path ros2_ws/src --rosdistro jazzy -y
+cd ros2_ws/
 colcon build
 ```
 
-In a new terminal, source underlay and overlay:
+Before sourcing the overlay, it is very important that you open a new terminal, separate from the one where you built the workspace. In a new terminal, source underlay and overlay:
 
 ```bash
 docker exec -it ros2-minimal bash
 source /opt/ros/jazzy/setup.bash
 cd ros2_ws/
 source install/local_setup.bash
+```
+
+Make a modification to a package (e.g. change the title in turtle_frame.cpp), rebuild, and run:
+```bash
+colcon build
+ros2 run turtlesim turtlesim_node
 ```
 
 
